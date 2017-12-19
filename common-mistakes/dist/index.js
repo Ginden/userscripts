@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name     Unnamed Script 653972
-// @version  1.0.0
+// @name     Michalwadas WikiHelp
+// @version  1.0.1
 // @grant    none
 // @include https://pl.wikipedia.org/*
 // ==/UserScript==
@@ -23,6 +23,16 @@
   })();
 
   /**
+   * Recursively flattens array
+   * @param arr
+   * @returns {*[]}
+   */
+
+  function flatten(arr) {
+    return Array.isArray(arr) ? ([].concat.apply([], arr.map(flatten))) : arr;
+  }
+
+  /**
    *
    * @param {string} nodeName
    * @param {Object} attributes
@@ -34,7 +44,7 @@
     for (const [key, value] of Object.entries(attributes)) {
       node.setAttribute(key, value);
     }
-    for (const child of [].concat(...children)) {
+    for (const child of flatten(children)) {
       if (typeof child === 'string') {
         node.appendChild(text(child));
       } else {
@@ -50,9 +60,8 @@
    * @returns {DocumentFragment}
    */
   function documentFragment(...children) {
-    const nodes = [].concat(...children);
     const df = document.createDocumentFragment();
-    for (const node of nodes) {
+    for (const node of flatten(children)) {
       df.appendChild(node);
     }
     return df;
@@ -123,12 +132,13 @@
       this._isHandling = false;
       this._handlers = [];
       this._mw = (async function() {
+        let i = 0;
         while (!('mw' in win)) {
-          await waitMs(10);
+          i += 5;
+          await waitMs(i % 300);
         }
         debug.log('MediaWiki config found');
         return win.mw;
-
       }());
       this._mw.catch(err => this._emitError(err));
     }
@@ -149,6 +159,7 @@
           .finally(keep60fps);
         await keep60fps();
       }
+      this._isHandling = false;
     }
 
     _emitError(err) {
@@ -162,28 +173,20 @@
 
 
   const mw = new MediaWiki();
-  mw.addHandler(run);
+  mw.addHandler(commonMistakes);
 
   const style = document.createElement('style');
-
   style.textContent = defaultStyle;
 
   document.head.appendChild(style);
 
-  async function run(mw) {
+  async function commonMistakes(mw) {
     const namespace = mw.config.values.wgCanonicalNamespace;
-    if (namespace === '') {
-      await commonMistakes();
-    }
-  }
-
-  async function commonMistakes() {
+    if (namespace !== '') return;
     const contentRoot = document.querySelector('#mw-content-text');
     contentRoot.normalize();
     await underlinePosiada(contentRoot);
     await keep60fps();
-
-
     contentRoot.normalize();
   }
 
@@ -197,7 +200,6 @@
       }
       const textContent = el.textContent;
       if (textContent.match(/posiada/i)) {
-        await keep60fps();
         const words = lexSentence(textContent);
         const nodes = words.map(word => {
           if (word.toLowerCase().startsWith('posiada')) {

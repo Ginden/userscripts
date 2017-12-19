@@ -26,7 +26,7 @@ style.textContent = defaultStyle;
 
 document.head.appendChild(style);
 
-async function commonMistakes() {
+async function commonMistakes(mw) {
     const namespace = mw.config.values.wgCanonicalNamespace;
     if (namespace !== '') return;
     const contentRoot = document.querySelector('#mw-content-text');
