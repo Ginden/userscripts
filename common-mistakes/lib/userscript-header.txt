@@ -1,0 +1,6 @@
+// ==UserScript==
+// @name     Michalwadas WikiHelp
+// @version  $VERSION$
+// @grant    none
+// @include https://pl.wikipedia.org/*
+// ==/UserScript==
