@@ -30,3 +30,7 @@ export function lexSentence(text) {
 export function isWhitespaceChar(char) {
     return char === '\n' || char === ' ' || char === '\t' || char === '\r';
 }
+
+export function isEmptyString(str) {
+    return str.trim() === '';
+}

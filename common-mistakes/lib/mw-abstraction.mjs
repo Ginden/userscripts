@@ -1,7 +1,7 @@
 import {
     keep60fps, waitMs
-} from "./utils/promise";
-import debug from './debug';
+} from './utils/promise.mjs';
+import {error, log} from './debug.mjs';
 
 
 const win = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
@@ -16,10 +16,10 @@ export default class MediaWiki {
                 i += 5;
                 await waitMs(i % 300);
             }
-            debug.log('MediaWiki config found');
+            log('MediaWiki config found');
             return win.mw;
         }());
-        this._mw.catch(err => this._emitError(err))
+        this._mw.catch(err => this._emitError(err));
     }
 
     addHandler(func) {
@@ -42,6 +42,6 @@ export default class MediaWiki {
     }
 
     _emitError(err) {
-        debug.error(err);
+        error(err);
     }
 }

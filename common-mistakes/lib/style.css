@@ -1,3 +1,7 @@
 span.red-underline {
     text-decoration: red wavy underline;
 }
+
+span.yellow-underline {
+    text-decoration: #C90 wavy underline;
+}

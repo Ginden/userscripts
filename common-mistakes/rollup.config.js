@@ -2,13 +2,17 @@ import string from 'rollup-plugin-string';
 import esformatter from 'rollup-plugin-esformatter'
 import fs from 'fs';
 import path from 'path';
+import subProcess from 'child_process';
 const pkg = require('./package.json');
 
+
+const fileHash = subProcess.execSync('find lib -type f | sort | xargs cat | sha256sum');
 const banner = fs.readFileSync(path.join(__dirname, 'lib/userscript-header.txt'), 'utf8')
-    .replace('$VERSION$', pkg.version);
+    .replace('$VERSION$', pkg.version)
+    .replace('$FILE_HASH', fileHash.slice(0,-4));
 
 export default {
-    input: 'lib/index.js',
+    input: 'lib/index.mjs',
     output: {
         format: 'iife',
         file: 'dist/index.js',

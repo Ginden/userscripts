@@ -1,0 +1,1 @@
+export const isFirefox = /firefox/.test(navigator.userAgent);

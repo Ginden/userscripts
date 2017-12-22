@@ -3,4 +3,6 @@
 // @version  $VERSION$
 // @grant    none
 // @include https://pl.wikipedia.org/*
+// @noframes
+// @description Generated from code $FILE_HASH
 // ==/UserScript==
