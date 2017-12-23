@@ -12,7 +12,7 @@ let isRunning = false;
 async function runTests() {
     if (isRunning) return;
     isRunning = true;
-    let entry = null;
+    let entry;
     while(entry = tests.shift()) {
         const [name, fn] = entry;
         const startTime = Date.now();

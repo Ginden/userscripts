@@ -7,14 +7,14 @@ import {
     powszechneBledy
 } from './submodules/index.mjs';
 
-import MediaWiki from './mw-abstraction.mjs';
+import MediaWikiAbstraction from './mw-abstraction.mjs';
 
 import defaultStyle from './style.css';
 
 console.log('Starting script');
 
 
-const mw = new MediaWiki();
+const mw = new MediaWikiAbstraction();
 mw.addHandler(commonMistakes);
 
 const style = document.createElement('style');

@@ -16,7 +16,7 @@ async function powszechneBledy(contentRoot) {
         }
         const issues = validateFragment(textContent);
         if(issues.length) {
-            const replacementNode = span({class: 'yellow-underline', title: issues.join(', ')}, textContent);
+            const replacementNode = span({class: 'red-underline', title: issues.join(', ')}, textContent);
             replaceList.push([el, replacementNode]);
         }
         await keep60fps();
@@ -40,7 +40,7 @@ export const predicatePairs = Object.entries({
     'po mgr nie powinno być kropki': contains('mgr.'),
     'nie stosujemy formy v-prezes': (txt) => txt.match(/v-(\S*)/i),
     'np': contains('np:'),
-    'najmniejsza linia': matches(/najmniejsz(\S*) lini/i),
+    'najmniejsza linia oporu': matches(/najmniejsz(\S*) lini/i),
     'uznać jako': matches(/uzna(\S*) jako/),
     'Krótko': contains('Krótko')
 });

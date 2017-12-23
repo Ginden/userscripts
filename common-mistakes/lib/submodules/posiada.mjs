@@ -15,7 +15,7 @@ export default timed(async function underlinePosiada(contentRoot) {
             const words = lexSentence(textContent);
             const nodes = words.map(word => {
                 if (word.toLowerCase().startsWith('posiada')) {
-                    return span({class: 'red-underline'}, word);
+                    return span({class: 'yellow-underline'}, word);
                 } else {
                     return text(word);
                 }

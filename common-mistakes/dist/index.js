@@ -1,12 +1,40 @@
 // ==UserScript==
-// @name     Michalwadas WikiHelp
-// @version  1.0.2
+// @name     Częstę błędy i pomyłki
+// @author Michał Wadas
+// @version  1.0.3
 // @grant    none
 // @include https://pl.wikipedia.org/*
 // @noframes
-// @description Generated from code b65bd79bfe29cb381a9732e5e4575e1347ed6e437446640ad65798107fcf9fb6
+// @namespace pl.michalwadas.userscripts
+// @license MIT
+// @description Generated from code 6fb235f02bdf7f8a28e7a5ba39134031966ff2ac37691d68c67b94609a503482
 // ==/UserScript==
 
+/**
+
+Copyright (c) 2017 Michał Wadas
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+**/
 (function() {
   'use strict';
 
@@ -193,7 +221,7 @@
         const nodes = words.map(word => {
           if (word.toLowerCase().startsWith('posiada')) {
             return span({
-              class: 'red-underline'
+              class: 'yellow-underline'
             }, word);
           } else {
             return text(word);
@@ -220,7 +248,7 @@
       const issues = validateFragment(textContent);
       if (issues.length) {
         const replacementNode = span({
-          class: 'yellow-underline',
+          class: 'red-underline',
           title: issues.join(', ')
         }, textContent);
         replaceList.push([el, replacementNode]);
@@ -246,7 +274,7 @@
     'po mgr nie powinno być kropki': contains('mgr.'),
     'nie stosujemy formy v-prezes': (txt) => txt.match(/v-(\S*)/i),
     'np': contains('np:'),
-    'najmniejsza linia': matches(/najmniejsz(\S*) lini/i),
+    'najmniejsza linia oporu': matches(/najmniejsz(\S*) lini/i),
     'uznać jako': matches(/uzna(\S*) jako/),
     'Krótko': contains('Krótko')
   });
@@ -309,7 +337,7 @@
           i += 5;
           await waitMs(i % 300);
         }
-        log('MediaWiki config found');
+        log('MediaWikiAbstraction config found');
         return win.mw;
       }());
       this._mw.catch(err => this._emitError(err));

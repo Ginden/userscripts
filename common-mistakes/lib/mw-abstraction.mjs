@@ -1,7 +1,11 @@
 import {
-    keep60fps, waitMs
+    keep60fps,
+    waitMs
 } from './utils/promise.mjs';
-import {error, log} from './debug.mjs';
+import {
+    error,
+    log
+} from './debug.mjs';
 
 
 const win = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
@@ -16,7 +20,7 @@ export default class MediaWiki {
                 i += 5;
                 await waitMs(i % 300);
             }
-            log('MediaWiki config found');
+            log('MediaWikiAbstraction config found');
             return win.mw;
         }());
         this._mw.catch(err => this._emitError(err));
