@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Konwersja linków do Pubmedu na szablon cytowań polskojęzycznej Wikipedii</title>
+    <style>
+        #content {
+            max-width: 800px;
+            width: 100%;
+            background-color: #FFF;
+            margin: 0 auto;
+            padding-bottom: 10em;
+            text-align: center;
+        }
+
+        body {
+            background-color: #333;
+        }
+
+        input#pmcid {
+            border: 1px solid #222;
+            width: 80%;
+            display: block;
+            margin: 0 auto;
+            padding: 0.75em;
+        }
+
+        button#convert {
+            margin: 0 auto;
+            display: block;
+        }
+
+        textarea#result {
+            width: 75%;
+            min-width: 400px;
+            display: block;
+            margin: 0 auto;
+            min-height: 20em;
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <label for="pmcid">Wklej link do Pubmedu/ID artykułu:</label><br>
+        <input id="pmcid" name="pmcid" type="text" />
+        <button id="convert">konwertuj</button><br>
+        <textarea id="result" readonly></textarea>
+    </div>
+<script>
+
+    const pubmedAPIurl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi';
+
+    document.querySelector('#convert').addEventListener('click', () => {
+        const url = document.querySelector('#pmcid').value;
+        download(url)
+            .then(fillTemplate)
+            .then(str => document.querySelector('#result').value = str)
+            .catch(displayError);
+        return false;
+    });
+
+    async function download(url) {
+        const pmid = getPCMID(url);
+        console.log({pmid});
+        // Example URL: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=22368089&retmode=json&tool=my_tool&email=my_email@example.com
+        const apiUrl = `${pubmedAPIurl}?${generateSearchString(pmid)}`;
+        console.log(apiUrl);
+        return fetch(apiUrl)
+            .then(res => res.json());
+    }
+
+    function fillTemplate(obj) {
+        console.log(obj);
+        throw new Error(`Y'golonac`);
+    }
+
+    function displayError(err) {
+        document.querySelector('#result').value = `${err.message}\n${err.stack}`;
+        console.error(err);
+    }
+
+    function getPCMID(txt) {
+        let str = txt.trim();
+        if (/^(\d{3,})$/.test(str)) {
+            return str;
+        }
+        const capturePMID = str.match(/^PM(?:ID)?(?:(?:\s|:))*(\d{4,})/i);
+        if (capturePMID) {
+            return capturePMID[1];
+        }
+        if (!str.startsWith('http')) {
+            str = `https://${str}`;
+        }
+        const url = new URL(str);
+        const normalizedUrl = `${url.hostname}${url.pathname}`;
+        const matchedPmid = normalizedUrl.match(/^www\.ncbi\.nlm\.nih\.gov\/pubmed\/(\d*)$/);
+        if (!matchedPmid) {
+            throw new Error(`String ${JSON.stringify(txt)} couldn't be parsed as reference to Pubmed`);
+        }
+        return matchedPmid[1];
+    }
+
+    const tool = `${location.host}/${location.pathname}`;
+    const email = 'michalwadas+pubmed@gmail.com';
+
+    function generateSearchString(pmid) {
+        const searchParams = new URLSearchParams();
+        searchParams.append('db', 'pubmed');
+        searchParams.append('id', pmid);
+        searchParams.append('retmode', 'json');
+        searchParams.append('tool', tool);
+        searchParams.append('email', email);
+        return searchParams
+    }
+
+    function fillTemplate(obj) {
+        const {result} = obj;
+        if (!(result && result.uids && result.uids.length)) {
+            throw new Error('Invalid server response');
+        }
+        const [uid] = obj.result.uids;
+        const publicationMetadata = result[uid];
+
+
+    }
+
+
+
+</script>
+</body>
+</html>

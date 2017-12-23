@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name     Częstę błędy i pomyłki
 // @author Michał Wadas
-// @version  1.2.1
+// @version  1.2.2
 // @grant    none
 // @include https://pl.wikipedia.org/*
 // @noframes
 // @namespace pl.michalwadas.userscripts
 // @license MIT
-// @description Generated from code d6f4a80b890683b37fb333ed5729ec43bb4016864ff175cb021e069a1e3ae8df
+// @description Generated from code 6aa53740f0f197a8caaa2707e7a0fecde98b2c1e5037ebbac6624c376cbd92b5
 // ==/UserScript==
 
 /**
@@ -399,7 +399,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   async function commonMistakes(mw) {
     const namespace = mw.config.values.wgCanonicalNamespace;
-    if (namespace !== '') return;
+    const action = mw.config.values.wgAction;
+    if (namespace !== '' || action !== 'view') return;
     const contentRoot = document.querySelector('#mw-content-text');
     contentRoot.normalize();
     await posiada(contentRoot);

@@ -24,7 +24,8 @@ document.head.appendChild(style);
 
 async function commonMistakes(mw) {
     const namespace = mw.config.values.wgCanonicalNamespace;
-    if (namespace !== '') return;
+    const action = mw.config.values.wgAction;
+    if (namespace !== '' || action !== 'view') return;
     const contentRoot = document.querySelector('#mw-content-text');
     contentRoot.normalize();
     await posiada(contentRoot);
