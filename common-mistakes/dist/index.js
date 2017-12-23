@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name     Częstę błędy i pomyłki
 // @author Michał Wadas
-// @version  1.2.0
+// @version  1.2.1
 // @grant    none
 // @include https://pl.wikipedia.org/*
 // @noframes
 // @namespace pl.michalwadas.userscripts
 // @license MIT
-// @description Generated from code bdc1a7b7cb0b78cfd7de43e6032135ce240b260cf9d33271d059b37d105362d0
+// @description Generated from code d6f4a80b890683b37fb333ed5729ec43bb4016864ff175cb021e069a1e3ae8df
 // ==/UserScript==
 
 /**
@@ -269,18 +269,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   var powszechneBledy$1 = timed(powszechneBledy);
 
+  const polishMonthNamesLocativus = [
+    'styczniu', 'lutym', 'marcu',
+    'kwietniu', 'maju', 'czerwcu',
+    'lipcu', 'sierpniu', 'wrześniu',
+    'październiku', 'listopadzie', 'grudniu'
+  ];
+
+
   const predicatePairs = Object.entries({
     'język Polski': matches(/język\S* Polski/),
     'w dniu dzisiejszym': matchesAny(/dni(a|u) dzisie/i, /dzień dzisie/i),
-    'w miesiącu lipcu': contains('w miesiącu'),
+    'w miesiącu lipcu': containsAny(...polishMonthNamesLocativus.map(m => `miesiącu ${m}`)),
     'w każdym bądź razie': contains('bądź razie'),
     'po wg nie powinno być kropki': contains('wg.'),
     'po mgr nie powinno być kropki': contains('mgr.'),
-    'nie stosujemy formy v-prezes': (txt) => txt.match(/v-(\S*)/i),
+    'nie stosujemy formy v-prezes': matches(/v-(\S*)/i),
     'np': contains('np:'),
     'najmniejsza linia oporu': matches(/najmniejsz(\S*) lini/i),
-    'uznać jako': matches(/uzna(\S*) jako/),
-    'Krótko': contains('Krótko')
+    'uznać jako': matches(/uzna(\S*) jako/)
   });
 
   /**
@@ -306,6 +313,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     return (txt) => txt.includes(searchedString);
   }
 
+  function containsAny(...strings) {
+    return (txt) => strings.some(searchedString => txt.includes(searchedString));
+  }
+
   /**
    * Returns predicate checking if text matches regex
    * @param {RegExp} regex
@@ -321,12 +332,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * @returns {function(string) : boolean}
    */
   function matchesAny(...regexes) {
-    return (txt) => {
-      for (const regex of regexes) {
-        if (regex.test(txt)) return true;
-      }
-      return false;
-    };
+    return (txt) => regexes.some(regex => regex.test(txt));
   }
 
   const isFirefox = /firefox/.test(navigator.userAgent);

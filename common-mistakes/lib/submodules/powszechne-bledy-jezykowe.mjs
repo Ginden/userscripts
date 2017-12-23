@@ -31,18 +31,25 @@ async function powszechneBledy(contentRoot) {
 
 export default timed(powszechneBledy);
 
+const polishMonthNamesLocativus = [
+    'styczniu', 'lutym', 'marcu',
+    'kwietniu', 'maju', 'czerwcu',
+    'lipcu', 'sierpniu', 'wrześniu',
+    'październiku', 'listopadzie', 'grudniu'
+];
+
+
 export const predicatePairs = Object.entries({
     'język Polski': matches(/język\S* Polski/),
     'w dniu dzisiejszym': matchesAny(/dni(a|u) dzisie/i, /dzień dzisie/i),
-    'w miesiącu lipcu': contains('w miesiącu'),
+    'w miesiącu lipcu': containsAny(...polishMonthNamesLocativus.map(m => `miesiącu ${m}`)),
     'w każdym bądź razie': contains('bądź razie'),
     'po wg nie powinno być kropki': contains('wg.'),
     'po mgr nie powinno być kropki': contains('mgr.'),
-    'nie stosujemy formy v-prezes': (txt) => txt.match(/v-(\S*)/i),
+    'nie stosujemy formy v-prezes': matches(/v-(\S*)/i),
     'np': contains('np:'),
     'najmniejsza linia oporu': matches(/najmniejsz(\S*) lini/i),
-    'uznać jako': matches(/uzna(\S*) jako/),
-    'Krótko': contains('Krótko')
+    'uznać jako': matches(/uzna(\S*) jako/)
 });
 
 /**
@@ -68,6 +75,10 @@ function contains(searchedString) {
     return (txt) => txt.includes(searchedString);
 }
 
+function containsAny(...strings) {
+    return (txt) => strings.some(searchedString => txt.includes(searchedString));
+}
+
 /**
  * Returns predicate checking if text matches regex
  * @param {RegExp} regex
@@ -83,10 +94,5 @@ function matches(regex) {
  * @returns {function(string) : boolean}
  */
 function matchesAny(...regexes) {
-    return (txt) => {
-        for(const regex of regexes) {
-            if (regex.test(txt)) return true;
-        }
-        return false;
-    };
+    return (txt) => regexes.some(regex => regex.test(txt));
 }

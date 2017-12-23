@@ -14,6 +14,8 @@ to be as expressive and readable as possible.
 
 ## Dla użytkowników
 
+### Dla paranoików
+
 Otwórz plik [./dist/index.js](dist/index.js), wciśnij przycisk "raw" i skopiuj kod albo na swoją stronę. 
 
 Instrukcję znajdziesz na [angielskiej wiki](https://en.wikipedia.org/wiki/Wikipedia:User_scripts).
