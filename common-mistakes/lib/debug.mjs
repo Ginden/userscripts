@@ -10,7 +10,7 @@ export function error(firstArg) {
 }
 
 export function timed(fn) {
-    return async function(...args) {
+    const wrapped = async function(...args) {
         const startTime = performance.now();
         try {
             return await fn(...args);
@@ -19,7 +19,11 @@ export function timed(fn) {
             log(`Executing function ${fn.name} took ${toHumanReadable(timeDiff)}`);
         }
     };
+    Object.assign(wrapped, fn);
+    wrapped.displayName = fn.name;
+    Object.defineProperty(wrapped, 'name',Object.getOwnPropertyDescriptor(fn, 'name'));
 
+    return wrapped;
 }
 
 function toHumanReadable(timeInMs) {
@@ -36,3 +40,14 @@ export default {
     log,
     error
 };
+
+export function timing(name) {
+    const stack = (new Error).stack.split('\n')[1].trim();
+    const loggedName = `${name} (${stack})`;
+    const startTime = performance.now();
+    log(`[START]: ${loggedName}`);
+    return (...extras) => {
+        const timeDiff = performance.now()-startTime;
+        log(`[END] ${loggedName} - ${toHumanReadable(timeDiff)}`, ...extras);
+    };
+}

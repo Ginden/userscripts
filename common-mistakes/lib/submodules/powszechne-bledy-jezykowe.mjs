@@ -10,8 +10,9 @@ import {isEmptyString} from '../utils/string.mjs';
 async function powszechneBledy(contentRoot) {
     const replaceList = [];
     for(const el of textIterator(contentRoot)) {
+        await keep60fps();
         const {textContent} = el;
-        if (isEmptyString(textContent)) {
+        if (textContent.length < 3 || isEmptyString(textContent)) {
             continue;
         }
         const issues = validateFragment(textContent);
@@ -19,7 +20,6 @@ async function powszechneBledy(contentRoot) {
             const replacementNode = span({class: 'red-underline', title: issues.join(', ')}, textContent);
             replaceList.push([el, replacementNode]);
         }
-        await keep60fps();
     }
 
     for(const [textNode, replaceNode] of replaceList) {

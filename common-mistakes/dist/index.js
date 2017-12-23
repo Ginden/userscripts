@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name     Częstę błędy i pomyłki
 // @author Michał Wadas
-// @version  1.0.3
+// @version  1.2.0
 // @grant    none
 // @include https://pl.wikipedia.org/*
 // @noframes
 // @namespace pl.michalwadas.userscripts
 // @license MIT
-// @description Generated from code 6fb235f02bdf7f8a28e7a5ba39134031966ff2ac37691d68c67b94609a503482
+// @description Generated from code bdc1a7b7cb0b78cfd7de43e6032135ce240b260cf9d33271d059b37d105362d0
 // ==/UserScript==
 
 /**
@@ -56,7 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * @returns {Promise.<undefined>}
    */
   const keep60fps = async function keep60fps() {
-    if (lastTick + maxDiff > Date.now()) {
+    if ((lastTick + maxDiff) < Date.now()) {
       return new Promise(requestAnimationFrame).then(() => {
         lastTick = Date.now();
       });
@@ -136,7 +136,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   const span = (...args) => element('span', ...args);
   const text = word => document.createTextNode(word);
-  const textIterator = (node) => new GenNodeIterator(node, NodeFilter.SHOW_TEXT);
+  const textIterator = (node) => GenNodeIterator(node, NodeFilter.SHOW_TEXT);
 
   /**
    * Split text to word and whitespace fragments.
@@ -186,7 +186,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
 
   function timed(fn) {
-    return async function(...args) {
+    const wrapped = async function(...args) {
       const startTime = performance.now();
       try {
         return await fn(...args);
@@ -195,7 +195,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         log(`Executing function ${fn.name} took ${toHumanReadable(timeDiff)}`);
       }
     };
+    Object.assign(wrapped, fn);
+    wrapped.displayName = fn.name;
+    Object.defineProperty(wrapped, 'name', Object.getOwnPropertyDescriptor(fn, 'name'));
 
+    return wrapped;
   }
 
   function toHumanReadable(timeInMs) {
@@ -241,8 +245,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   async function powszechneBledy(contentRoot) {
     const replaceList = [];
     for (const el of textIterator(contentRoot)) {
+      await keep60fps();
       const {textContent} = el;
-      if (isEmptyString(textContent)) {
+      if (textContent.length < 3 || isEmptyString(textContent)) {
         continue;
       }
       const issues = validateFragment(textContent);
@@ -253,7 +258,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         }, textContent);
         replaceList.push([el, replacementNode]);
       }
-      await keep60fps();
     }
 
     for (const [textNode, replaceNode] of replaceList) {
@@ -325,20 +329,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     };
   }
 
-  const win = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
+  const isFirefox = /firefox/.test(navigator.userAgent);
+  const windowProxy = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
 
   class MediaWiki {
     constructor() {
       this._isHandling = false;
       this._handlers = [];
+      let i = 0;
       this._mw = (async function() {
-        let i = 0;
-        while (!('mw' in win)) {
+        while (!('mw' in windowProxy)) {
           i += 5;
-          await waitMs(i % 300);
+          await waitMs(i % 100);
         }
-        log('MediaWikiAbstraction config found');
-        return win.mw;
+        log('MediaWiki config found');
+        return windowProxy.mw;
       }());
       this._mw.catch(err => this._emitError(err));
     }
@@ -353,10 +358,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (this._isHandling) return;
       while (this._handlers[0]) {
         const handler = this._handlers.shift();
-        await this._mw
-          .then(handler)
-          .catch(err => this._emitError(err))
-          .finally(keep60fps);
+        try {
+          log(`Executing handler ${handler.name}`);
+          await this._mw.then(handler);
+          log(`Success in handler ${handler.name}`);
+        } catch (err) {
+          error(`Handler ${handler.name} threw error: ${err.message}`);
+          this._emitError(err);
+        } finally {
+          await keep60fps();
+        }
         await keep60fps();
       }
       this._isHandling = false;

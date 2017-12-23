@@ -65,4 +65,4 @@ export function* GenNodeIterator(...args) {
 
 export const span = (...args) => element('span', ...args);
 export const text = word => document.createTextNode(word);
-export const textIterator = (node) => new GenNodeIterator(node, NodeFilter.SHOW_TEXT);
+export const textIterator = (node) => GenNodeIterator(node, NodeFilter.SHOW_TEXT);

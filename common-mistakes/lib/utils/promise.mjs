@@ -16,7 +16,7 @@ const maxDiff = 15;
  * @returns {Promise.<undefined>}
  */
 export const keep60fps = async function keep60fps() {
-    if (lastTick + maxDiff > Date.now()) {
+    if ((lastTick + maxDiff) < Date.now()) {
         return new Promise(requestAnimationFrame).then(() => {
             lastTick = Date.now();
         });
