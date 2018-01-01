@@ -22,10 +22,17 @@ style.textContent = defaultStyle;
 
 document.head.appendChild(style);
 
+/**
+ *
+ * @param {MediaWikiConfigAbstraction} mw
+ * @returns {Promise.<void>}
+ */
 async function commonMistakes(mw) {
-    const namespace = mw.config.values.wgCanonicalNamespace;
-    const action = mw.config.values.wgAction;
-    if (namespace !== '' || action !== 'view') return;
+
+    const namespace = mw.config.wgCanonicalNamespace;
+    const action = mw.config.wgAction;
+    if (action !== 'view') return;
+    if (!(namespace === '' || mw.pageName === 'Wikipedysta:Michalwadas/common-mistakes-test')) return;
     const contentRoot = document.querySelector('#mw-content-text');
     contentRoot.normalize();
     await posiada(contentRoot);

@@ -22,7 +22,7 @@ export default class MediaWiki {
                 await waitMs(i % 100);
             }
             log('MediaWiki config found');
-            return windowProxy.mw;
+            return new MediaWikiConfigAbstraction(windowProxy.mw);
         }());
         this._mw.catch(err => this._emitError(err));
     }
@@ -56,3 +56,38 @@ export default class MediaWiki {
         error(err);
     }
 }
+
+export class MediaWikiConfigAbstraction {
+    constructor(originalMw) {
+        this._mw = originalMw;
+    }
+
+    get raw() {
+        return this._mw;
+    }
+
+    /**
+     *
+     * @returns {Object.<string, *>}
+     */
+    get config() {
+        return this._mw.config.values;
+    }
+
+}
+
+function mapConfig(fromKey, toKey) {
+    Object.defineProperty(MediaWikiConfigAbstraction.prototype, toKey, {
+        get() {
+            return this.config[fromKey];
+        }
+    });
+}
+
+mapConfig('wgPageName', 'pageName');
+mapConfig('wgAction', 'action');
+mapConfig('wgRelevantPageName', 'relevantPageName');
+mapConfig('wgUserName', 'user');
+mapConfig('wgIsArticle', 'isArticle');
+
+

@@ -7,7 +7,7 @@
 // @noframes
 // @namespace pl.michalwadas.userscripts
 // @license MIT
-// @description Generated from code 6aa53740f0f197a8caaa2707e7a0fecde98b2c1e5037ebbac6624c376cbd92b5
+// @description Generated from code d710ea2ca83bbd671d92741065efb93d8ab83d01695094e93bb35b0384de55ff
 // ==/UserScript==
 
 /**
@@ -349,7 +349,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           await waitMs(i % 100);
         }
         log('MediaWiki config found');
-        return windowProxy.mw;
+        return new MediaWikiConfigAbstraction(windowProxy.mw);
       }());
       this._mw.catch(err => this._emitError(err));
     }
@@ -384,6 +384,39 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
+  class MediaWikiConfigAbstraction {
+    constructor(originalMw) {
+      this._mw = originalMw;
+    }
+
+    get raw() {
+      return this._mw;
+    }
+
+    /**
+     *
+     * @returns {Object.<string, *>}
+     */
+    get config() {
+      return this._mw.config.values;
+    }
+
+  }
+
+  function mapConfig(fromKey, toKey) {
+    Object.defineProperty(MediaWikiConfigAbstraction.prototype, toKey, {
+      get() {
+        return this.config[fromKey];
+      }
+    });
+  }
+
+  mapConfig('wgPageName', 'pageName');
+  mapConfig('wgAction', 'action');
+  mapConfig('wgRelevantPageName', 'relevantPageName');
+  mapConfig('wgUserName', 'user');
+  mapConfig('wgIsArticle', 'isArticle');
+
   var defaultStyle = "span.red-underline {\n    text-decoration: red wavy underline;\n}\n\nspan.yellow-underline {\n    text-decoration: #C90 wavy underline;\n}";
 
   console.log('Starting script');
@@ -397,10 +430,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   document.head.appendChild(style);
 
+  /**
+   *
+   * @param {MediaWikiConfigAbstraction} mw
+   * @returns {Promise.<void>}
+   */
   async function commonMistakes(mw) {
-    const namespace = mw.config.values.wgCanonicalNamespace;
-    const action = mw.config.values.wgAction;
-    if (namespace !== '' || action !== 'view') return;
+
+    const namespace = mw.config.wgCanonicalNamespace;
+    const action = mw.config.wgAction;
+    if (action !== 'view') return;
+    if (!(namespace === '' || mw.pageName === 'Wikipedysta:Michalwadas/common-mistakes-test')) return;
     const contentRoot = document.querySelector('#mw-content-text');
     contentRoot.normalize();
     await posiada(contentRoot);
