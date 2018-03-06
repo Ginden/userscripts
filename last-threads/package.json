@@ -1,0 +1,28 @@
+{
+  "name": "last-threads",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:1": "rollup --config rollup.config.js --output.format iife --interop false",
+    "build": "npm run build:1 --silent > dist/index.js",
+    "test": "node --experimental-modules test/index.mjs"
+  },
+  "engines": {
+    "node": ">=8.9"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chalk": "^2.3.0",
+    "eslint": "^4.13.1",
+    "mocha": "^4.0.1",
+    "nyc": "^11.4.1",
+    "rollup": "^0.52.3",
+    "rollup-plugin-esformatter": "^0.4.0",
+    "rollup-plugin-string": "^2.0.2"
+  }
+}

@@ -1,0 +1,17 @@
+// ==UserScript==
+// @name     Podświetlanie ostatnich wątków
+// @author Michał Wadas
+// @version  $VERSION$
+// @grant    none
+// @include https://pl.wikipedia.org/*
+// @noframes
+// @namespace pl.michalwadas.userscripts
+// @license MIT
+// @description Generated from code $FILE_HASH
+// ==/UserScript==
+
+/**
+
+$LICENSE
+
+**/
