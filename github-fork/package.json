@@ -1,0 +1,26 @@
+{
+  "name": "github-fork",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -cw"
+  },
+  "keywords": [],
+  "author": "Michał Wadas <michalwadas@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^1.2.3",
+    "rollup-plugin-typescript2": "^0.19.3",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "debug": "^4.1.1"
+  }
+}
