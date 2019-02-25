@@ -25,7 +25,7 @@ const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
     } = dimensions;
 
     if (!(isFork === 'true' && isPublic === 'true' && repoPath && repoParentPath)) return;
-    const repoName = repoPath.split('/').shift();
+    const repoName = repoPath.split('/').pop();
 
     const commandString = `
         git clone git@github.com:${repoPath}.git;

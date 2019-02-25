@@ -7,7 +7,7 @@
 // @noframes
 // @namespace pl.michalwadas.userscripts
 // @license MIT
-// @description Generated from code 0f426608c835898dbda40a213f5d4e9895fca8356831fe7be2ae73a13880e639
+// @description Generated from code c0e50b8f3531b40b3dc1f8038d6e8ba5ecef74e7e3e7769f90e9282aa96f9fa0
 // ==/UserScript==
 
 /**
@@ -54,7 +54,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         const { repository_is_fork: isFork, repository_nwo: repoPath, repository_parent_nwo: repoParentPath, repository_public: isPublic } = dimensions;
         if (!(isFork === 'true' && isPublic === 'true' && repoPath && repoParentPath))
             return;
-        const repoName = repoPath.split('/').shift();
+        const repoName = repoPath.split('/').pop();
         const commandString = `
         git clone git@github.com:${repoPath}.git;
         cd ${repoName};
