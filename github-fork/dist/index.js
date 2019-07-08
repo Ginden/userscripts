@@ -3,11 +3,11 @@
 // @author Michał Wadas
 // @version  1.0.0
 // @grant    none
-// @include https://pl.wikipedia.org/*
+// @include /https://github.com/.*/
 // @noframes
-// @namespace pl.michalwadas.userscripts
+// @namespace pl.michalwadas.userscripts.github
 // @license MIT
-// @description Generated from code c0e50b8f3531b40b3dc1f8038d6e8ba5ecef74e7e3e7769f90e9282aa96f9fa0
+// @description Generated from code 3be76cfda350d835de2ec4249dcdee479e9166cef06936cddef1139e1fe3c034
 // ==/UserScript==
 
 /**
@@ -35,18 +35,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 **/
+
 (function () {
     'use strict';
 
+    console.log('Script start');
     const waitMs = (ms) => new Promise(resolve => setTimeout(resolve, ms));
     (async () => {
         let i = 10;
         const actualWindow = typeof windowProxy === 'undefined' ? typeof unsafeWindow === 'undefined' ? window : unsafeWindow : windowProxy;
-        while (!('_octo' in actualWindow)) {
-            if (i > 35 * 1000)
+        let _octo = null;
+        const windows = [
+            () => window,
+            () => windowProxy,
+            () => unsafeWindow
+        ].map(f => {
+            try {
+                return f();
+            }
+            catch (err) {
+                return null;
+            }
+        }).filter(Boolean);
+        while (!_octo) {
+            for (const win of windows) {
+                if (win._octo && win._octo.actor && win._octo.actor.login) {
+                    _octo = win._octo;
+                }
+            }
+            if (i > 60 * 1000) {
+                console.log(`Failed to read property _octo of window`);
                 return; // Give up after ~1 minute
-            await waitMs(i *= 2);
+            }
+            await waitMs(500);
+            i += 500;
         }
+        console.log(`Found _octo`);
         const { actor, dimensions } = _octo;
         if (!(actor && actor.login && dimensions)) {
             return;

@@ -1,19 +1,42 @@
 import './global';
 
+console.log('Script start');
 const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 (async () => {
     let i = 10;
     const actualWindow = typeof windowProxy === 'undefined' ? typeof unsafeWindow === 'undefined' ? window : unsafeWindow : windowProxy;
-    while(!('_octo' in actualWindow)) {
-        if (i > 35*1000) return; // Give up after ~1 minute
-        await waitMs(i *= 2);
+    let _octo: Octo = null;
+    const windows = [
+        () => window,
+        () => windowProxy,
+        () => unsafeWindow
+    ].map(f => {
+        try {
+            return f()
+        } catch (err) {
+            return null;
+        }
+    }).filter(Boolean);
+    while (!_octo) {
+        for (const win of windows) {
+            if (win._octo && win._octo.actor && win._octo.actor.login) {
+                _octo = win._octo;
+            }
+        }
+        if (i > 60 * 1000) {
+            console.log(`Failed to read property _octo of window`);
+            return; // Give up after ~1 minute
+        }
+        await waitMs(500);
+        i += 500;
     }
+    console.log(`Found _octo`);
     const {
         actor,
         dimensions
     } = _octo;
-    if(!(actor && actor.login && dimensions)) {
+    if (!(actor && actor.login && dimensions)) {
         return;
     }
 
@@ -23,7 +46,6 @@ const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
         repository_parent_nwo: repoParentPath,
         repository_public: isPublic
     } = dimensions;
-
     if (!(isFork === 'true' && isPublic === 'true' && repoPath && repoParentPath)) return;
     const repoName = repoPath.split('/').pop();
 

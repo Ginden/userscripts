@@ -3,9 +3,9 @@
 // @author Michał Wadas
 // @version  $VERSION$
 // @grant    none
-// @include https://pl.wikipedia.org/*
+// @include /https://github.com/.*/
 // @noframes
-// @namespace pl.michalwadas.userscripts
+// @namespace pl.michalwadas.userscripts.github
 // @license MIT
 // @description Generated from code $FILE_HASH
 // ==/UserScript==

@@ -1,10 +1,8 @@
-declare enum gBool {
-    true = 'true',
-    false = 'false',
-}
+declare type gBool = 'true' | 'false';
 
 type Octo = {
     actor?: {
+        id?: number;
         login?: string
     },
     dimensions?: {
