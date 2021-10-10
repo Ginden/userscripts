@@ -1,0 +1,25 @@
+{
+  "name": "hacker-news-improvements",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx rollup -c rollup.config.js"
+  },
+  "keywords": [],
+  "author": "Michał Wadas <michalwadas@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@rollup/plugin-typescript": "^8.2.5",
+    "@types/greasemonkey": "^4.0.2",
+    "@types/lodash-es": "^4.17.5",
+    "rollup": "^2.58.0",
+    "rollup-plugin-string": "^3.0.0",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21",
+    "tslib": "^2.3.1"
+  }
+}

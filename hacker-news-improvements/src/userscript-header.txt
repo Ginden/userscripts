@@ -1,0 +1,14 @@
+// ==UserScript==
+// @name     Ginden's Hacker News Improvements
+// @author Michał Wadas
+// @version  $VERSION$
+// @grant    none
+// @include https://news.ycombinator.com/*
+// @noframes
+// @namespace pl.michalwadas.userscripts.hackernews
+// @description Generated from code $FILE_HASH
+// ==/UserScript==
+
+/**
+$LICENSE
+**/
