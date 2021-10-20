@@ -1,3 +1,10 @@
 p.quote {
-    color: red;
+    background-position-x: 0;
+    background-position-y: 0;
+    background-repeat: no-repeat;
+    background-size: 1.2em;
+    border-left: 0.5em #ccc solid;
+    color: rgba(0, 0, 0, 0.8);
+    display: inline-block;
+    padding-left: 0.25em;
 }
