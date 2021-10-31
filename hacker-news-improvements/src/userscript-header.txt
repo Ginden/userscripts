@@ -4,9 +4,10 @@
 // @version  $VERSION$
 // @grant    none
 // @include https://news.ycombinator.com/*
+// @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Generated from code $FILE_HASH
+// @description Various QoL improvements for Hacker News. Generated from code $FILE_HASH
 // ==/UserScript==
 
 /**

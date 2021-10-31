@@ -1,0 +1,21 @@
+{
+  "name": "user-chrome",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prebuild": "node ./download-images.js",
+    "build": "postcss -o dist/userChrome.css src/*.css"
+  },
+  "keywords": [],
+  "author": "Michał Wadas <michalwadas@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^16.11.6",
+    "ini": "^2.0.0",
+    "postcss": "^8.3.11",
+    "postcss-assets": "^6.0.0",
+    "postcss-cli": "^9.0.1",
+    "postcss-image-inliner": "^5.0.0"
+  }
+}

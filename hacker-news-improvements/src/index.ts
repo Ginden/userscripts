@@ -1,24 +1,15 @@
 // @ts-ignore
-import style from './index.css';
+import './index.css';
 import { colorUsernames } from "./colors";
-import { once } from "lodash-es";
 import {
   addParagraphToFirstLineOfComment,
   collapseQuotes,
   markParagraphsWithQuotes,
   removeMarkdownQuotationCharacter
 } from './quotes';
-
-function addStylesheet(): void {
-  const styleElement = document.createElement('style');
-  styleElement.textContent = style;
-  document.head.appendChild(styleElement);
-}
-
-
+import { once } from './once';
 
 const main = once(async function main() {
-  addStylesheet();
   addParagraphToFirstLineOfComment();
   markParagraphsWithQuotes();
   removeMarkdownQuotationCharacter();

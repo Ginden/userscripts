@@ -1,0 +1,10 @@
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"); /* only needed once */
+
+#context-take-screenshot::before {
+    content: url("assets/screenshot.svg");
+    width: 1em;
+    height: 1em;
+    display: inline-block;
+    margin: 0 -1em 0 0;
+    padding: 0;
+}
