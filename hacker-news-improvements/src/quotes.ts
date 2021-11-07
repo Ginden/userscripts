@@ -14,7 +14,7 @@ export function addParagraphToFirstLineOfComment(): void {
 }
 
 export function markParagraphsWithQuotes(): void {
-  Array.from(window.document.querySelectorAll('.comtr p')).forEach(p => {
+  Array.from(window.document.querySelectorAll('.comtr p')).forEach((p) => {
     if (p.textContent?.trim().startsWith('>')) {
       p.classList.add('quote');
     }
@@ -44,4 +44,3 @@ export function removeMarkdownQuotationCharacter() {
     firstChild.textContent = (firstChild.textContent || '').slice(currTextContent.indexOf('>') + 1).trim();
   }
 }
-

@@ -1,4 +1,4 @@
-import { Config } from "./config/types";
+import { Config } from './config/types';
 
 export const hackerNewsImprovementsConfig: Config = {
   title: 'Hacker news improvements',
@@ -27,7 +27,7 @@ export const hackerNewsImprovementsConfig: Config = {
           id: 'saturation',
           default: 40,
           step: 1,
-          title: 'Saturation'
+          title: 'Saturation',
         },
         {
           type: 'range',
@@ -37,8 +37,8 @@ export const hackerNewsImprovementsConfig: Config = {
           title: 'Lightness',
           default: 35,
           step: 1,
-        }
-      ]
-    }
-  ]
-}
+        },
+      ],
+    },
+  ],
+};

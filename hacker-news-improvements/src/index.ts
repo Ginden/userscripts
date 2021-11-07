@@ -2,14 +2,15 @@
 import './index.css';
 
 import '@types/greasemonkey';
-import { colorUsernames } from "./colors";
-import { hackerNewsImprovementsConfig } from "./hn-config";
-import { registerConfig } from "./config/ui";
+import 'dialog-polyfill';
+import { colorUsernames } from './colors';
+import { hackerNewsImprovementsConfig } from './hn-config';
+import { registerConfig } from './config/ui';
 import {
   addParagraphToFirstLineOfComment,
   collapseQuotes,
   markParagraphsWithQuotes,
-  removeMarkdownQuotationCharacter
+  removeMarkdownQuotationCharacter,
 } from './quotes';
 import { once } from './once';
 
@@ -30,5 +31,3 @@ if (document.readyState === 'complete') {
   console.log(`Waiting for load event`);
   window.addEventListener('load', main);
 }
-
-

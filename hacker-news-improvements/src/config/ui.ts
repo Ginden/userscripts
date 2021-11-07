@@ -1,4 +1,4 @@
-import * as console from 'console';
+import dialogPolyfill from 'dialog-polyfill';
 import {
   Config,
   ConfigElement,
@@ -9,6 +9,8 @@ import {
 } from './types';
 
 declare function GM_registerMenuCommand(command: string, fn: () => void): void;
+
+const dialogMap = new Map<string, HTMLDialogElement>();
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
   tagName: K,
@@ -23,24 +25,50 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
+function getIdFromPath(path: string[]): string {
+  return path.join('.');
+}
+
 function createHtmlFromRadioConfig(definition: RadioConfigElement, path: string[]): Element {
-  return createElement('nav');
+  const id = getIdFromPath([...path, definition.id]);
+  return createElement('div', {}, [
+    createElement('label', { for: id }, [definition.title]),
+    ...definition.options.map((v, i) => {
+      return createElement('input', { type: 'radio', id: `${id}.${i}`, name: id });
+    }),
+  ]);
 }
 
 function createHtmlFromBooleanConfig(definition: YesNoConfigElement, path: string[]): Element {
-  return undefined;
+  const id = getIdFromPath([...path, definition.id]);
+
+  return createElement('div', {}, [
+    createElement('label', { for: id }, [definition.title]),
+    createElement('input', { type: 'checkbox', id, name: id }),
+  ]);
 }
 
 function createHtmlFromSectionConfig(definition: ConfigSection, path: string[]): Element {
-  return createElement(
-    'fieldset',
-    {},
-    definition.elements.map((v) => createHtmlFromConfigElement(v, [...path, definition.id]))
-  );
+  return createElement('fieldset', {}, [
+    createElement('legend', {}, [definition.title]),
+    ...definition.elements.map((v) => createHtmlFromConfigElement(v, [...path, definition.id])),
+  ]);
 }
 
 function createHtmlFromRangeElement(definition: RangeConfigElement, path: string[]): Element {
-  return undefined;
+  const id = getIdFromPath([...path, definition.id]);
+
+  return createElement('div', {}, [
+    createElement('label', { for: id }, [definition.title]),
+    createElement('input', {
+      type: 'range',
+      id,
+      name: id,
+      min: definition.min,
+      max: definition.max,
+      step: definition.step ?? 1,
+    }),
+  ]);
 }
 
 function createHtmlFromConfigElement(definition: ConfigElement, path: string[]): Element {
@@ -56,8 +84,10 @@ function createHtmlFromConfigElement(definition: ConfigElement, path: string[]):
   }
 }
 
-function buildConfigPage(config: Config): HTMLElement {
+function buildConfigPage(config: Config): HTMLDialogElement {
+  const dialog = document.createElement('dialog');
   const form = document.createElement('form');
+  dialog.append(form);
   form.append(createElement('legend', {}, ['Config']));
   for (const definition of config.elements) {
     form.append(createHtmlFromConfigElement(definition, []));
@@ -65,15 +95,20 @@ function buildConfigPage(config: Config): HTMLElement {
   form.append(createElement('input', { type: 'submit' }, ['Save']));
   form.append(createElement('input', { type: 'reset' }, ['Reset & exit']));
 
-  return form;
+  return dialog;
 }
 
 function showConfigPage(config: Config): void {
-  const html = buildConfigPage(config);
-  ((typeof unsafeWindow === 'undefined' ? window : unsafeWindow) as any).console?.log(html);
+  const dialog = dialogMap.get(config.title);
+  if (dialog) {
+    dialog.showModal();
+  }
 }
 
 export function registerConfig(config: Config) {
+  const dialog = buildConfigPage(config);
+  dialogMap.set(config.title, dialog);
+  dialogPolyfill.registerDialog(dialog);
   GM_registerMenuCommand(`Open config: ${config.title}`, () => {
     showConfigPage(config);
   });
