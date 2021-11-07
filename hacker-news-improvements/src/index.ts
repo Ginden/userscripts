@@ -1,6 +1,10 @@
 // @ts-ignore
 import './index.css';
+
+import '@types/greasemonkey';
 import { colorUsernames } from "./colors";
+import { hackerNewsImprovementsConfig } from "./hn-config";
+import { registerConfig } from "./config/ui";
 import {
   addParagraphToFirstLineOfComment,
   collapseQuotes,
@@ -8,6 +12,8 @@ import {
   removeMarkdownQuotationCharacter
 } from './quotes';
 import { once } from './once';
+
+registerConfig(hackerNewsImprovementsConfig);
 
 const main = once(async function main() {
   addParagraphToFirstLineOfComment();

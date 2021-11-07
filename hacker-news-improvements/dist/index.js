@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.293.1756
+// @version  21.311.2024
 // @grant    none
 // @include https://news.ycombinator.com/*
 // @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code cc6e6d9e48a12b85af10b37fe54b5e96b819b7b0e03d62c943e59a9d2243d23d
+// @description Various QoL improvements for Hacker News. Generated from code 67d566cdf1f29011b052c06a5fb17280dbf8c07c44552db3a21c0dad2a04eef7
 // ==/UserScript==
 
 /**
@@ -147,13 +147,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       };
   }
 
-  function addStylesheet() {
-      const styleElement = document.createElement('style');
-      styleElement.textContent = css_248z;
-      document.head.appendChild(styleElement);
-  }
   const main = once(async function main() {
-      addStylesheet();
       addParagraphToFirstLineOfComment();
       markParagraphsWithQuotes();
       removeMarkdownQuotationCharacter();
