@@ -2,8 +2,9 @@
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
 // @version  $VERSION$
-// @grant              GM_getValue
-// @grant              GM_setValue
+// @grant              GM.getValue
+// @grant              GM.setValue
+// @grant GM.registerMenuCommand
 // @include https://news.ycombinator.com/*
 // @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
 // @noframes

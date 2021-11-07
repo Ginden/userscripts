@@ -3,7 +3,6 @@ import typescript from '@rollup/plugin-typescript';
 import subProcess from "child_process";
 import fs from "fs";
 import path from "path";
-import pkg from "./package.json";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import postcss from 'rollup-plugin-postcss';
 

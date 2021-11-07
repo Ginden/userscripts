@@ -8,8 +8,6 @@ import {
   YesNoConfigElement,
 } from './types';
 
-declare function GM_registerMenuCommand(command: string, fn: () => void): void;
-
 const dialogMap = new Map<string, HTMLDialogElement>();
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
@@ -85,8 +83,8 @@ function createHtmlFromConfigElement(definition: ConfigElement, path: string[]):
 }
 
 function buildConfigPage(config: Config): HTMLDialogElement {
-  const dialog = document.createElement('dialog');
-  const form = document.createElement('form');
+  const dialog = createElement('dialog');
+  const form = createElement('form', { method: 'dialog' });
   dialog.append(form);
   form.append(createElement('legend', {}, ['Config']));
   for (const definition of config.elements) {
@@ -94,13 +92,13 @@ function buildConfigPage(config: Config): HTMLDialogElement {
   }
   form.append(createElement('input', { type: 'submit' }, ['Save']));
   form.append(createElement('input', { type: 'reset' }, ['Reset & exit']));
-
   return dialog;
 }
 
 function showConfigPage(config: Config): void {
   const dialog = dialogMap.get(config.title);
   if (dialog) {
+    console.log('Show modal', dialog);
     dialog.showModal();
   }
 }
@@ -109,7 +107,9 @@ export function registerConfig(config: Config) {
   const dialog = buildConfigPage(config);
   dialogMap.set(config.title, dialog);
   dialogPolyfill.registerDialog(dialog);
-  GM_registerMenuCommand(`Open config: ${config.title}`, () => {
+  document.body.append(dialog);
+  GM.registerMenuCommand(`Open config: ${config.title}`, () => {
+    console.log(dialog);
     showConfigPage(config);
   });
 }

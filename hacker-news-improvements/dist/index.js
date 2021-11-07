@@ -1,14 +1,15 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.311.2354
-// @grant              GM_getValue
-// @grant              GM_setValue
+// @version  21.312.055
+// @grant              GM.getValue
+// @grant              GM.setValue
+// @grant GM.registerMenuCommand
 // @include https://news.ycombinator.com/*
 // @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code ed87f96e5d69d1da499b1eea519c2f0df325ea065aa7890740ce4a960d78b715
+// @description Various QoL improvements for Hacker News. Generated from code a46d7b1065d4d10041ea8530fd037817fd914bfd742d583bc63c23ec22557e56
 // ==/UserScript==
 
 /**
@@ -1053,8 +1054,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
   }
   function buildConfigPage(config) {
-      const dialog = document.createElement('dialog');
-      const form = document.createElement('form');
+      const dialog = createElement('dialog');
+      const form = createElement('form', { method: 'dialog' });
       dialog.append(form);
       form.append(createElement('legend', {}, ['Config']));
       for (const definition of config.elements) {
@@ -1067,6 +1068,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function showConfigPage(config) {
       const dialog = dialogMap.get(config.title);
       if (dialog) {
+          console.log('Show modal', dialog);
           dialog.showModal();
       }
   }
@@ -1074,7 +1076,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const dialog = buildConfigPage(config);
       dialogMap.set(config.title, dialog);
       dialogPolyfill.registerDialog(dialog);
-      GM_registerMenuCommand(`Open config: ${config.title}`, () => {
+      document.body.append(dialog);
+      GM.registerMenuCommand(`Open config: ${config.title}`, () => {
+          console.log(dialog);
           showConfigPage(config);
       });
   }
