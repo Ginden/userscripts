@@ -5,7 +5,7 @@ import '@types/greasemonkey';
 import 'dialog-polyfill';
 import { colorUsernames } from './colors';
 import { getSavedConfig } from './config/storage';
-import { hackerNewsImprovementsConfig, HackerNewsSavedConfig } from "./hn-config";
+import { hackerNewsImprovementsConfig, HackerNewsSavedConfig } from './hn-config';
 import { registerConfig } from './config/ui';
 import {
   addParagraphToFirstLineOfComment,
@@ -15,10 +15,10 @@ import {
 } from './quotes';
 import { once } from './once';
 
-registerConfig(hackerNewsImprovementsConfig);
+registerConfig(hackerNewsImprovementsConfig).catch(console.error);
 
 const main = once(async function main() {
-  const config = await getSavedConfig(hackerNewsImprovementsConfig) as HackerNewsSavedConfig;
+  const config = (await getSavedConfig(hackerNewsImprovementsConfig)) as HackerNewsSavedConfig;
   if (config['quotes']) {
     addParagraphToFirstLineOfComment();
     markParagraphsWithQuotes();

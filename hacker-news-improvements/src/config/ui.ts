@@ -149,7 +149,6 @@ export function loadDataIntoDialogForm(config: Config, form: HTMLElement, data: 
         console.warn(`Missing input HTML`, { element, selector });
         continue;
       }
-      console.log({ element, inputHtml, selector, currentConfigValue });
       inputHtml.checked = typeof currentConfigValue === 'boolean' ? currentConfigValue : false;
     }
   }
