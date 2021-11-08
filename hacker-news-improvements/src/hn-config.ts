@@ -1,4 +1,5 @@
 import { Config } from './config/types';
+import { default as HackerNewsSavedConfigRaw } from './default-config.generated';
 
 export const hackerNewsImprovementsConfig: Config = {
   title: 'Hacker news improvements',
@@ -42,3 +43,5 @@ export const hackerNewsImprovementsConfig: Config = {
     },
   ],
 };
+
+export type HackerNewsSavedConfig = typeof HackerNewsSavedConfigRaw;

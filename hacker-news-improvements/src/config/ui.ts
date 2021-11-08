@@ -1,3 +1,4 @@
+// @ts-ignore
 import dialogPolyfill from 'dialog-polyfill';
 import {
   Config,
@@ -6,7 +7,10 @@ import {
   RadioConfigElement,
   RangeConfigElement,
   YesNoConfigElement,
+  SavedConfig,
 } from './types';
+import { getSavedConfig, saveConfig } from './storage';
+import { getDefaultsFromConfig, getIdFromPath, iterateOverConfig } from './helpers';
 
 const dialogMap = new Map<string, HTMLDialogElement>();
 
@@ -21,10 +25,6 @@ function createElement<K extends keyof HTMLElementTagNameMap>(
   }
   element.append(...children);
   return element;
-}
-
-function getIdFromPath(path: string[]): string {
-  return path.join('.');
 }
 
 function createHtmlFromRadioConfig(definition: RadioConfigElement, path: string[]): Element {
@@ -98,18 +98,74 @@ function buildConfigPage(config: Config): HTMLDialogElement {
 function showConfigPage(config: Config): void {
   const dialog = dialogMap.get(config.title);
   if (dialog) {
-    console.log('Show modal', dialog);
+    // @ts-ignore
     dialog.showModal();
   }
 }
 
-export function registerConfig(config: Config) {
+export function extractDataFromDialogForm(form: HTMLFormElement): SavedConfig {
+  const ret: SavedConfig = {};
+  const radios = Array.from<HTMLInputElement>(form.querySelectorAll('input[type="radio"]:checked'));
+  for (const radio of radios) {
+    ret[radio.name] = radio.value;
+  }
+  for (const checkbox of Array.from(form.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'))) {
+    ret[checkbox.name] = checkbox.checked;
+  }
+  for (const range of Array.from(form.querySelectorAll<HTMLInputElement>('input[type="range"]'))) {
+    ret[range.name] = range.value;
+  }
+  return ret;
+}
+
+export function loadDataIntoDialogForm(config: Config, form: HTMLElement, data: SavedConfig): void {
+  const defaults = getDefaultsFromConfig(config);
+  for (const element of iterateOverConfig(config)) {
+    const name = getIdFromPath(element.path);
+    const currentConfigValue = data[name] || defaults[name];
+    if (element.type === 'section') {
+      continue;
+    } else if (element.type === 'range') {
+      const selector = `input[type=range][name="${name}"]`;
+      const inputHtml = form.querySelector<HTMLInputElement>(selector);
+      if (!inputHtml) {
+        console.warn(`Missing input HTML`, { element, selector });
+        continue;
+      }
+      inputHtml.value = String(currentConfigValue);
+    } else if (element.type === 'radio') {
+      const selector = `input[type=radio][name="${name}"]`;
+      const inputHtml = form.querySelectorAll<HTMLInputElement>(selector);
+      const elementToMarkAsChecked = Array.from(inputHtml).find((v) => v.value === currentConfigValue);
+      if (!elementToMarkAsChecked) {
+        console.warn(`Missing input HTML`, { element, selector });
+        continue;
+      }
+      elementToMarkAsChecked.checked = true;
+    } else if (element.type === 'boolean') {
+      const selector = `input[type=checkbox][name="${name}"]`;
+      const inputHtml = form.querySelector<HTMLInputElement>(selector);
+      if (!inputHtml) {
+        console.warn(`Missing input HTML`, { element, selector });
+        continue;
+      }
+      console.log({ element, inputHtml, selector, currentConfigValue });
+      inputHtml.checked = typeof currentConfigValue === 'boolean' ? currentConfigValue : false;
+    }
+  }
+}
+
+export async function registerConfig(config: Config): Promise<void> {
   const dialog = buildConfigPage(config);
+  dialog.addEventListener('close', () => {
+    return saveConfig(config, extractDataFromDialogForm(dialog.querySelector('form')!));
+  });
   dialogMap.set(config.title, dialog);
   dialogPolyfill.registerDialog(dialog);
   document.body.append(dialog);
-  GM.registerMenuCommand(`Open config: ${config.title}`, () => {
-    console.log(dialog);
+  GM.registerMenuCommand(`Open config: ${config.title}`, async () => {
+    const savedConfig = await getSavedConfig(config);
+    loadDataIntoDialogForm(config, dialog, savedConfig);
     showConfigPage(config);
   });
 }

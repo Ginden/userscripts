@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.312.055
+// @version  21.312.1940
 // @grant              GM.getValue
 // @grant              GM.setValue
 // @grant GM.registerMenuCommand
@@ -9,7 +9,7 @@
 // @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code a46d7b1065d4d10041ea8530fd037817fd914bfd742d583bc63c23ec22557e56
+// @description Various QoL improvements for Hacker News. Generated from code 1f694ce2b5e99326b000bb667316c6f35c9db77d7b288ac5b3da64865d2a96c4
 // ==/UserScript==
 
 /**
@@ -926,28 +926,55 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     HTMLFormElement.prototype.submit = replacementFormSubmit;
   }
 
-  async function mapUserToColor(username) {
+  async function mapUserToColor(username, config) {
       const digest = await window.crypto.subtle.digest('SHA-1', new TextEncoder().encode(username));
       const firstTwoBytes = new Uint16Array(digest)[0];
       const percent = firstTwoBytes / (2 ** 16 - 1);
       const h = Math.round(Number(percent * 360));
-      const s = 40;
-      const l = 35;
+      const s = config['username-colors.saturation'];
+      const l = config['username-colors.lightness'];
       return `hsl(${h}, ${s}%, ${l}%)`;
   }
-  async function colorUsernames() {
+  async function colorUsernames(config) {
       const users = Array.from(window.document.querySelectorAll('a.hnuser'));
       const userNames = new Set(users.map((u) => u.textContent).filter(Boolean));
-      const map = new Map();
-      for (const userName of userNames) {
-          map.set(userName, await mapUserToColor(userName));
-      }
+      const map = new Map(await Promise.all([...userNames].map((userName) => Promise.all([userName, mapUserToColor(userName, config)]))));
       for (const user of users) {
           const userColor = map.get(user.textContent || '');
           if (userColor) {
               user.style.color = userColor;
           }
       }
+  }
+
+  function* iterateOverConfig(config, path = []) {
+      for (const element of config.elements) {
+          if (element.type === 'section') {
+              yield* iterateOverConfig(element, [...path, element.id]);
+          }
+          else {
+              yield Object.assign(element, { path: [...path, element.id] });
+          }
+      }
+  }
+  function getDefaultsFromConfig(config) {
+      const ret = {};
+      for (const element of iterateOverConfig(config)) {
+          const id = getIdFromPath(element.path);
+          if (element.default !== undefined)
+              ret[id] = element.default;
+      }
+      return ret;
+  }
+  function getIdFromPath(path) {
+      return path.join('.');
+  }
+
+  function getSavedConfig(config) {
+      return GM.getValue(config.title).then((v) => (v ? JSON.parse(String(v)) : getDefaultsFromConfig(config)));
+  }
+  function saveConfig(config, value) {
+      return GM.setValue(config.title, JSON.stringify(value));
   }
 
   const hackerNewsImprovementsConfig = {
@@ -1001,9 +1028,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
       element.append(...children);
       return element;
-  }
-  function getIdFromPath(path) {
-      return path.join('.');
   }
   function createHtmlFromRadioConfig(definition, path) {
       const id = getIdFromPath([...path, definition.id]);
@@ -1068,17 +1092,73 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function showConfigPage(config) {
       const dialog = dialogMap.get(config.title);
       if (dialog) {
-          console.log('Show modal', dialog);
           dialog.showModal();
       }
   }
-  function registerConfig(config) {
+  function extractDataFromDialogForm(form) {
+      const ret = {};
+      const radios = Array.from(form.querySelectorAll('input[type="radio"]:checked'));
+      for (const radio of radios) {
+          ret[radio.name] = radio.value;
+      }
+      for (const checkbox of Array.from(form.querySelectorAll('input[type="checkbox"]'))) {
+          ret[checkbox.name] = checkbox.checked;
+      }
+      for (const range of Array.from(form.querySelectorAll('input[type="range"]'))) {
+          ret[range.name] = range.value;
+      }
+      return ret;
+  }
+  function loadDataIntoDialogForm(config, form, data) {
+      const defaults = getDefaultsFromConfig(config);
+      for (const element of iterateOverConfig(config)) {
+          const name = getIdFromPath(element.path);
+          const currentConfigValue = data[name] || defaults[name];
+          if (element.type === 'section') {
+              continue;
+          }
+          else if (element.type === 'range') {
+              const selector = `input[type=range][name="${name}"]`;
+              const inputHtml = form.querySelector(selector);
+              if (!inputHtml) {
+                  console.warn(`Missing input HTML`, { element, selector });
+                  continue;
+              }
+              inputHtml.value = String(currentConfigValue);
+          }
+          else if (element.type === 'radio') {
+              const selector = `input[type=radio][name="${name}"]`;
+              const inputHtml = form.querySelectorAll(selector);
+              const elementToMarkAsChecked = Array.from(inputHtml).find((v) => v.value === currentConfigValue);
+              if (!elementToMarkAsChecked) {
+                  console.warn(`Missing input HTML`, { element, selector });
+                  continue;
+              }
+              elementToMarkAsChecked.checked = true;
+          }
+          else if (element.type === 'boolean') {
+              const selector = `input[type=checkbox][name="${name}"]`;
+              const inputHtml = form.querySelector(selector);
+              if (!inputHtml) {
+                  console.warn(`Missing input HTML`, { element, selector });
+                  continue;
+              }
+              console.log({ element, inputHtml, selector, currentConfigValue });
+              inputHtml.checked = typeof currentConfigValue === 'boolean' ? currentConfigValue : false;
+          }
+      }
+  }
+  async function registerConfig(config) {
       const dialog = buildConfigPage(config);
+      dialog.addEventListener('close', () => {
+          return saveConfig(config, extractDataFromDialogForm(dialog.querySelector('form')));
+      });
       dialogMap.set(config.title, dialog);
       dialogPolyfill.registerDialog(dialog);
       document.body.append(dialog);
-      GM.registerMenuCommand(`Open config: ${config.title}`, () => {
-          console.log(dialog);
+      GM.registerMenuCommand(`Open config: ${config.title}`, async () => {
+          const savedConfig = await getSavedConfig(config);
+          loadDataIntoDialogForm(config, dialog, savedConfig);
           showConfigPage(config);
       });
   }
@@ -1141,11 +1221,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
   registerConfig(hackerNewsImprovementsConfig);
   const main = once(async function main() {
-      addParagraphToFirstLineOfComment();
-      markParagraphsWithQuotes();
-      removeMarkdownQuotationCharacter();
-      collapseQuotes();
-      await colorUsernames();
+      const config = await getSavedConfig(hackerNewsImprovementsConfig);
+      if (config['quotes'] === true) {
+          addParagraphToFirstLineOfComment();
+          markParagraphsWithQuotes();
+          removeMarkdownQuotationCharacter();
+          collapseQuotes();
+      }
+      if (config['username-colors.enabled']) {
+          await colorUsernames(config);
+      }
   });
   if (document.readyState === 'complete') {
       console.log(`Manually running code`);

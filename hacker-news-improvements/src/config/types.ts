@@ -2,7 +2,8 @@ export interface BaseConfigElement {
   type: string;
   id: string;
   title: string;
-  default?: unknown;
+  default?: string | null | number | boolean;
+  path?: string;
 }
 
 export interface YesNoConfigElement extends BaseConfigElement {
@@ -40,3 +41,5 @@ export type Config = {
   title: string;
   elements: ConfigElement[];
 };
+
+export type SavedConfig = Record<string, string | null | boolean | number>;

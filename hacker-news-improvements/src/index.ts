@@ -4,7 +4,8 @@ import './index.css';
 import '@types/greasemonkey';
 import 'dialog-polyfill';
 import { colorUsernames } from './colors';
-import { hackerNewsImprovementsConfig } from './hn-config';
+import { getSavedConfig } from './config/storage';
+import { hackerNewsImprovementsConfig, HackerNewsSavedConfig } from "./hn-config";
 import { registerConfig } from './config/ui';
 import {
   addParagraphToFirstLineOfComment,
@@ -17,11 +18,16 @@ import { once } from './once';
 registerConfig(hackerNewsImprovementsConfig);
 
 const main = once(async function main() {
-  addParagraphToFirstLineOfComment();
-  markParagraphsWithQuotes();
-  removeMarkdownQuotationCharacter();
-  collapseQuotes();
-  await colorUsernames();
+  const config = await getSavedConfig(hackerNewsImprovementsConfig) as HackerNewsSavedConfig;
+  if (config['quotes']) {
+    addParagraphToFirstLineOfComment();
+    markParagraphsWithQuotes();
+    removeMarkdownQuotationCharacter();
+    collapseQuotes();
+  }
+  if (config['username-colors.enabled']) {
+    await colorUsernames(config);
+  }
 });
 
 if (document.readyState === 'complete') {

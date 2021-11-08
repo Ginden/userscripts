@@ -13,14 +13,12 @@
     "module": "esnext",
     "rootDir": "./src",
     "sourceMap": false,
-    "outDir": "./dist",
     "removeComments": true,
     "importHelpers": true,
     "importsNotUsedAsValues": "remove",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true
+    "skipLibCheck": true
   }
 }
