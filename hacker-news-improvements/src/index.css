@@ -8,3 +8,15 @@ p.quote {
   display: inline-block;
   padding-left: 0.25em;
 }
+
+.karma-change.positive > .icon {
+  color: green;
+}
+
+.karma-change.negative > .icon {
+  color: red;
+}
+
+.karma-change.neutral > .icon {
+  color: gray;
+}

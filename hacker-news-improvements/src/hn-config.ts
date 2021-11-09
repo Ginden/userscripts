@@ -1,5 +1,6 @@
 import { Config } from './config/types';
-import { default as HackerNewsSavedConfigRaw } from './default-config.generated';
+
+export { HackerNewsSavedConfig } from './default-config.generated';
 
 export const hackerNewsImprovementsConfig: Config = {
   title: 'Hacker news improvements',
@@ -8,6 +9,12 @@ export const hackerNewsImprovementsConfig: Config = {
       type: 'boolean',
       id: 'quotes',
       title: 'Convert quotes',
+      default: true,
+    },
+    {
+      type: 'boolean',
+      id: 'karma-tracking',
+      title: 'Track karma changes',
       default: true,
     },
     {
@@ -43,5 +50,3 @@ export const hackerNewsImprovementsConfig: Config = {
     },
   ],
 };
-
-export type HackerNewsSavedConfig = typeof HackerNewsSavedConfigRaw;

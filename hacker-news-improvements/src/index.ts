@@ -3,8 +3,9 @@ import './index.css';
 
 import '@types/greasemonkey';
 import 'dialog-polyfill';
-import { colorUsernames } from './colors';
+import { colorUsernames } from './features/colors';
 import { getSavedConfig } from './config/storage';
+import { trackKarma } from './features/track-karma/html';
 import { hackerNewsImprovementsConfig, HackerNewsSavedConfig } from './hn-config';
 import { registerConfig } from './config/ui';
 import {
@@ -12,13 +13,14 @@ import {
   collapseQuotes,
   markParagraphsWithQuotes,
   removeMarkdownQuotationCharacter,
-} from './quotes';
-import { once } from './once';
+} from './features/quotes';
+import { once } from './utils/once';
 
 registerConfig(hackerNewsImprovementsConfig).catch(console.error);
 
 const main = once(async function main() {
   const config = (await getSavedConfig(hackerNewsImprovementsConfig)) as HackerNewsSavedConfig;
+  console.log('Current config', config);
   if (config['quotes']) {
     addParagraphToFirstLineOfComment();
     markParagraphsWithQuotes();
@@ -28,12 +30,9 @@ const main = once(async function main() {
   if (config['username-colors.enabled']) {
     await colorUsernames(config);
   }
+  if (config['karma-tracking']) {
+    await trackKarma();
+  }
 });
 
-if (document.readyState === 'complete') {
-  console.log(`Manually running code`);
-  void main();
-} else {
-  console.log(`Waiting for load event`);
-  window.addEventListener('load', main);
-}
+window.addEventListener('load', main);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.312.2038
+// @version  21.313.1844
 // @grant              GM.getValue
 // @grant              GM.setValue
 // @grant GM.registerMenuCommand
@@ -9,7 +9,7 @@
 // @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code bd0638cba3e07769807200c071ce79fa7a67ce20f170bb4cac7890566fa0edaa
+// @description Various QoL improvements for Hacker News. Generated from code 6bf29875e49c310480a0ec9ed072e8369959b3613e97f3b72386c4f19612f48b
 // ==/UserScript==
 
 /**
@@ -66,7 +66,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     }
   }
 
-  var css_248z = "p.quote {\n  background-position-x: 0;\n  background-position-y: 0;\n  background-repeat: no-repeat;\n  background-size: 1.2em;\n  border-left: 0.5em #ccc solid;\n  color: rgba(0, 0, 0, 0.8);\n  display: inline-block;\n  padding-left: 0.25em;\n}\n";
+  var css_248z = "p.quote {\n  background-position-x: 0;\n  background-position-y: 0;\n  background-repeat: no-repeat;\n  background-size: 1.2em;\n  border-left: 0.5em #ccc solid;\n  color: rgba(0, 0, 0, 0.8);\n  display: inline-block;\n  padding-left: 0.25em;\n}\n\n.karma-change.positive > .icon {\n  color: green;\n}\n\n.karma-change.negative > .icon {\n  color: red;\n}\n\n.karma-change.neutral > .icon {\n  color: gray;\n}\n";
   styleInject(css_248z);
 
   // nb. This is for IE10 and lower _only_.
@@ -977,6 +977,103 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       return GM.setValue(config.title, JSON.stringify(value));
   }
 
+  function createElement(tagName, props = {}, children = []) {
+      const element = document.createElement(tagName);
+      for (const [key, value] of Object.entries(props)) {
+          element.setAttribute(key, String(value));
+      }
+      element.append(...children);
+      return element;
+  }
+
+  function findLast(arr, predicate, thisArg) {
+      for (let i = arr.length - 1; i > 0; i--) {
+          const v = arr[i];
+          const predicateReturnValue = Reflect.apply(predicate, thisArg, [v, i, arr]);
+          if (predicateReturnValue) {
+              return v;
+          }
+      }
+      return undefined;
+  }
+
+  function getDate(datetime = new Date()) {
+      return datetime.toISOString().slice(0, 10);
+  }
+
+  const maxEntries = 30;
+  async function saveKarma(karma, date = getDate()) {
+      const currentKarmaStore = await getKarmaHistory();
+      const valueToUpdate = currentKarmaStore.find(([historicalDate, value]) => historicalDate === date);
+      if (valueToUpdate) {
+          valueToUpdate[1] = karma;
+      }
+      else {
+          currentKarmaStore.push([date, karma]);
+      }
+      while (currentKarmaStore.length > maxEntries) {
+          currentKarmaStore.shift();
+      }
+      await GM.setValue('karma-store', JSON.stringify(currentKarmaStore));
+  }
+  function getKarmaHistory() {
+      return GM.getValue('karma-store')
+          .then(String)
+          .then(JSON.parse)
+          .catch(() => null)
+          .then((v) => (Array.isArray(v) ? v : []));
+  }
+
+  function extractKarmaFromWebsite() {
+      const a = document.querySelector('a#me');
+      if (!a) {
+          return 0;
+      }
+      const textContent = (a.parentElement?.textContent ?? '').trim();
+      const match = textContent.match(/.*\((\d*)\).*/gm);
+      if (match && parseInt(match[1])) {
+          return parseInt(match[1]);
+      }
+      return 0;
+  }
+  function buildChangeElement(change, since) {
+      const fragment = document.createDocumentFragment();
+      const textNode = document.createTextNode(' | ');
+      const changeElement = createElement('span', { class: 'karma-change' });
+      fragment.append(changeElement);
+      if (change > 0) {
+          changeElement.classList.add('positive');
+          changeElement.append(createElement('span', { class: 'icon' }, ['⬆']), document.createTextNode(`${change}`));
+      }
+      else if (change === 0) {
+          changeElement.classList.add('neutral');
+          changeElement.append(createElement('span', { class: 'icon' }, ['~']), document.createTextNode('0'));
+      }
+      else if (change < 0) {
+          changeElement.classList.add('negative');
+          changeElement.append(createElement('span', { class: 'icon' }, ['⬇']), document.createTextNode(`${change}`));
+      }
+      changeElement.title = `Since ${since}`;
+      fragment.append(textNode);
+      return fragment;
+  }
+  async function trackKarma() {
+      const currentKarma = extractKarmaFromWebsite();
+      await saveKarma(currentKarma);
+      const currentDate = getDate();
+      const karmaHistory = await getKarmaHistory();
+      const previousDayVisitKarma = findLast(karmaHistory, ([date]) => date !== currentDate) || [currentDate, currentKarma];
+      const [sinceDate, historicalKarma] = previousDayVisitKarma;
+      const change = currentKarma - historicalKarma;
+      const logoutElement = document.querySelector('a#logout');
+      if (!logoutElement) {
+          console.warn('No logout element found');
+          return;
+      }
+      const changeElement = buildChangeElement(change, sinceDate);
+      logoutElement.parentElement?.insertBefore(changeElement, logoutElement);
+  }
+
   const hackerNewsImprovementsConfig = {
       title: 'Hacker news improvements',
       elements: [
@@ -984,6 +1081,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
               type: 'boolean',
               id: 'quotes',
               title: 'Convert quotes',
+              default: true,
+          },
+          {
+              type: 'boolean',
+              id: 'karma-tracking',
+              title: 'Track karma changes',
               default: true,
           },
           {
@@ -1021,14 +1124,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   };
 
   const dialogMap = new Map();
-  function createElement(tagName, props = {}, children = []) {
-      const element = document.createElement(tagName);
-      for (const [key, value] of Object.entries(props)) {
-          element.setAttribute(key, String(value));
-      }
-      element.append(...children);
-      return element;
-  }
   function createHtmlFromRadioConfig(definition, path) {
       const id = getIdFromPath([...path, definition.id]);
       return createElement('div', {}, [
@@ -1149,13 +1244,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   }
   async function registerConfig(config) {
       const dialog = buildConfigPage(config);
-      dialog.addEventListener('close', () => {
-          return saveConfig(config, extractDataFromDialogForm(dialog.querySelector('form')));
+      dialog.addEventListener('reset', () => {
+          loadDataIntoDialogForm(config, dialog, getDefaultsFromConfig(config));
+      });
+      dialog.addEventListener('close', async (e) => {
+          e.preventDefault();
+          await saveConfig(config, extractDataFromDialogForm(dialog.querySelector('form')));
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          location.reload();
       });
       dialogMap.set(config.title, dialog);
       dialogPolyfill.registerDialog(dialog);
       document.body.append(dialog);
-      GM.registerMenuCommand(`Open config: ${config.title}`, async () => {
+      GM.registerMenuCommand(`Config: ${config.title}`, async () => {
           const savedConfig = await getSavedConfig(config);
           loadDataIntoDialogForm(config, dialog, savedConfig);
           showConfigPage(config);
@@ -1221,6 +1322,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   registerConfig(hackerNewsImprovementsConfig).catch(console.error);
   const main = once(async function main() {
       const config = (await getSavedConfig(hackerNewsImprovementsConfig));
+      console.log('Current config', config);
       if (config['quotes']) {
           addParagraphToFirstLineOfComment();
           markParagraphsWithQuotes();
@@ -1230,14 +1332,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       if (config['username-colors.enabled']) {
           await colorUsernames(config);
       }
+      if (config['karma-tracking']) {
+          await trackKarma();
+      }
   });
-  if (document.readyState === 'complete') {
-      console.log(`Manually running code`);
-      void main();
-  }
-  else {
-      console.log(`Waiting for load event`);
-      window.addEventListener('load', main);
-  }
+  window.addEventListener('load', main);
 
 })();

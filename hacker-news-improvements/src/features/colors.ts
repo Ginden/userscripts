@@ -1,4 +1,4 @@
-import { HackerNewsSavedConfig } from './hn-config';
+import { HackerNewsSavedConfig } from '../hn-config';
 
 export async function mapUserToColor(username: string, config: HackerNewsSavedConfig): Promise<string> {
   const digest = await window.crypto.subtle.digest('SHA-1', new TextEncoder().encode(username));

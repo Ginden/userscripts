@@ -11,21 +11,9 @@ import {
 } from './types';
 import { getSavedConfig, saveConfig } from './storage';
 import { getDefaultsFromConfig, getIdFromPath, iterateOverConfig } from './helpers';
+import { createElement } from '../utils/create-element';
 
 const dialogMap = new Map<string, HTMLDialogElement>();
-
-function createElement<K extends keyof HTMLElementTagNameMap>(
-  tagName: K,
-  props: Record<string, string | number | boolean> = {},
-  children: (string | Node)[] = []
-): HTMLElementTagNameMap[K] {
-  const element = document.createElement(tagName);
-  for (const [key, value] of Object.entries(props)) {
-    element.setAttribute(key, String(value));
-  }
-  element.append(...children);
-  return element;
-}
 
 function createHtmlFromRadioConfig(definition: RadioConfigElement, path: string[]): Element {
   const id = getIdFromPath([...path, definition.id]);
@@ -156,13 +144,19 @@ export function loadDataIntoDialogForm(config: Config, form: HTMLElement, data: 
 
 export async function registerConfig(config: Config): Promise<void> {
   const dialog = buildConfigPage(config);
-  dialog.addEventListener('close', () => {
-    return saveConfig(config, extractDataFromDialogForm(dialog.querySelector('form')!));
+  dialog.addEventListener('reset', () => {
+    loadDataIntoDialogForm(config, dialog, getDefaultsFromConfig(config));
+  });
+  dialog.addEventListener('close', async (e) => {
+    e.preventDefault();
+    await saveConfig(config, extractDataFromDialogForm(dialog.querySelector('form')!));
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    location.reload();
   });
   dialogMap.set(config.title, dialog);
   dialogPolyfill.registerDialog(dialog);
   document.body.append(dialog);
-  GM.registerMenuCommand(`Open config: ${config.title}`, async () => {
+  GM.registerMenuCommand(`Config: ${config.title}`, async () => {
     const savedConfig = await getSavedConfig(config);
     loadDataIntoDialogForm(config, dialog, savedConfig);
     showConfigPage(config);
