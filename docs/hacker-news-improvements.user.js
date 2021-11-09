@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.313.1844
+// @version  21.313.2114
 // @grant              GM.getValue
 // @grant              GM.setValue
 // @grant GM.registerMenuCommand
 // @include https://news.ycombinator.com/*
-// @downloadURL https://raw.githubusercontent.com/Ginden/userscripts/master/hacker-news-improvements/dist/index.js
+// @downloadURL https://ginden.github.io/userscripts/hacker-news-improvements.user.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code 6bf29875e49c310480a0ec9ed072e8369959b3613e97f3b72386c4f19612f48b
+// @description Various QoL improvements for Hacker News. Generated from code 7e446bac15901da41e8892d8b6a56fb3375282ce06508d3484323ed6e0e14060
 // ==/UserScript==
 
 /**
