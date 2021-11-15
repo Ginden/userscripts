@@ -6,13 +6,15 @@ import { getKarmaHistory, saveKarma } from './storage';
 export function extractKarmaFromWebsite(): number {
   const a = document.querySelector<HTMLAnchorElement>('a#me');
   if (!a) {
+    console.warn(`Not logged in?`);
     return 0;
   }
   const textContent = (a.parentElement?.textContent ?? '').trim();
-  const match = textContent.match(/.*\((\d*)\).*/gm);
+  const match = textContent.match(/\((\d*)\)/);
   if (match && parseInt(match[1])) {
     return parseInt(match[1]);
   }
+  console.warn(`Failed to parse ${textContent}`, { match });
   return 0;
 }
 
@@ -42,6 +44,7 @@ export async function trackKarma(): Promise<void> {
   const currentDate = getDate();
   const karmaHistory = await getKarmaHistory();
   const previousDayVisitKarma = findLast(karmaHistory, ([date]) => date !== currentDate) || [currentDate, currentKarma];
+  console.log({ karmaHistory, previousDayVisitKarma, currentKarma });
   const [sinceDate, historicalKarma] = previousDayVisitKarma;
   const change = currentKarma - historicalKarma;
   const logoutElement = document.querySelector<HTMLAnchorElement>('a#logout');

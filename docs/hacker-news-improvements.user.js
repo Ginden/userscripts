@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.313.2114
+// @version  21.319.1017
 // @grant              GM.getValue
 // @grant              GM.setValue
 // @grant GM.registerMenuCommand
@@ -9,7 +9,7 @@
 // @downloadURL https://ginden.github.io/userscripts/hacker-news-improvements.user.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code 7e446bac15901da41e8892d8b6a56fb3375282ce06508d3484323ed6e0e14060
+// @description Various QoL improvements for Hacker News. Generated from code 9c8c3f2f66048b6d76217ab54df4d6278645979fd83521108cb90029fba48987
 // ==/UserScript==
 
 /**
@@ -1027,13 +1027,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
   function extractKarmaFromWebsite() {
       const a = document.querySelector('a#me');
       if (!a) {
+          console.warn(`Not logged in?`);
           return 0;
       }
       const textContent = (a.parentElement?.textContent ?? '').trim();
-      const match = textContent.match(/.*\((\d*)\).*/gm);
+      const match = textContent.match(/\((\d*)\)/);
       if (match && parseInt(match[1])) {
           return parseInt(match[1]);
       }
+      console.warn(`Failed to parse ${textContent}`, { match });
       return 0;
   }
   function buildChangeElement(change, since) {
@@ -1063,6 +1065,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const currentDate = getDate();
       const karmaHistory = await getKarmaHistory();
       const previousDayVisitKarma = findLast(karmaHistory, ([date]) => date !== currentDate) || [currentDate, currentKarma];
+      console.log({ karmaHistory, previousDayVisitKarma, currentKarma });
       const [sinceDate, historicalKarma] = previousDayVisitKarma;
       const change = currentKarma - historicalKarma;
       const logoutElement = document.querySelector('a#logout');
