@@ -44,7 +44,6 @@ export async function trackKarma(): Promise<void> {
   const currentDate = getDate();
   const karmaHistory = await getKarmaHistory();
   const previousDayVisitKarma = findLast(karmaHistory, ([date]) => date !== currentDate) || [currentDate, currentKarma];
-  console.log({ karmaHistory, previousDayVisitKarma, currentKarma });
   const [sinceDate, historicalKarma] = previousDayVisitKarma;
   const change = currentKarma - historicalKarma;
   const logoutElement = document.querySelector<HTMLAnchorElement>('a#logout');

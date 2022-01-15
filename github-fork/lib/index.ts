@@ -1,68 +1,86 @@
-import './global';
-
-console.log('Script start');
-const waitMs = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export function createElement<K extends keyof HTMLElementTagNameMap>(
+  tagName: K,
+  props: Record<string, string | number | boolean> = {},
+  children: (string | Node)[] = []
+): HTMLElementTagNameMap[K] {
+  const element = document.createElement(tagName);
+  for (const [key, value] of Object.entries(props)) {
+    element.setAttribute(key, String(value));
+  }
+  element.append(...children);
+  return element;
+}
 
 (async () => {
-    let i = 10;
-    const actualWindow = typeof windowProxy === 'undefined' ? typeof unsafeWindow === 'undefined' ? window : unsafeWindow : windowProxy;
-    let _octo: Octo = null;
-    const windows = [
-        () => window,
-        () => windowProxy,
-        () => unsafeWindow
-    ].map(f => {
-        try {
-            return f()
-        } catch (err) {
-            return null;
-        }
-    }).filter(Boolean);
-    while (!_octo) {
-        for (const win of windows) {
-            if (win._octo && win._octo.actor && win._octo.actor.login) {
-                _octo = win._octo;
-            }
-        }
-        if (i > 60 * 1000) {
-            console.log(`Failed to read property _octo of window`);
-            return; // Give up after ~1 minute
-        }
-        await waitMs(500);
-        i += 500;
-    }
-    console.log(`Found _octo`);
-    const {
-        actor,
-        dimensions
-    } = _octo;
-    if (!(actor && actor.login && dimensions)) {
-        return;
-    }
+  const header = document.querySelector<HTMLDivElement>('#repository-container-header');
+  if (!header) {
+    return;
+  }
+  if (!header.textContent?.includes(`forked from`)) {
+    return;
+  }
+  const currentRepositoryAuthor = header.querySelector('h1 [rel="author"]')?.textContent?.trim();
+  if (!currentRepositoryAuthor) {
+    console.warn(`Repository author empty, it shouldn't happen`);
+    return;
+  }
+  const currentRepositoryName = header.querySelector(`h1 [itemprop="name"] a`)?.textContent?.trim();
+  if (!currentRepositoryName) {
+    console.warn(`Repository name empty, it shouldn't happen`);
+  }
+  const repoParentPath = (() => {
+    header.normalize();
+    const nodeIterator = document.createNodeIterator(header, NodeFilter.SHOW_TEXT);
+    do {
+      const nextNode: Text | null = nodeIterator.nextNode() as any;
+      if (!nextNode) {
+        return null;
+      }
+      if (!nextNode.textContent?.includes('forked from')) {
+        continue;
+      }
+      const parent = nextNode.parentNode;
+      if (!parent) {
+        return null;
+      }
+      return parent.querySelector('a')?.textContent?.trim() ?? null;
+    } while (true);
+  })();
+  if (!repoParentPath) {
+    console.warn(`Fork name empty, it shouldn't happen`);
+    return;
+  }
 
-    const {
-        repository_is_fork: isFork,
-        repository_nwo: repoPath,
-        repository_parent_nwo: repoParentPath,
-        repository_public: isPublic
-    } = dimensions;
-    if (!(isFork === 'true' && isPublic === 'true' && repoPath && repoParentPath)) return;
-    const repoName = repoPath.split('/').pop();
+  const repoPath = `${currentRepositoryAuthor}/${currentRepositoryName}`;
+  const commandString = `
+    git clone git@github.com:${repoPath}.git &&
+    cd ${currentRepositoryName} &&
+    git remote add upstream git@github.com:${repoParentPath}.git &&
+    git fetch upstream
+  `
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('\n');
 
-    const commandString = `
-        git clone git@github.com:${repoPath}.git;
-        cd ${repoName};
-        git remote add upstream git@github.com:${repoParentPath}.git
-    `.split('\n').map(line => line.trim()).filter(Boolean).join('\n');
+  const sidebar = document.querySelector('#repo-content-pjax-container .Layout-sidebar .BorderGrid');
+  if (!sidebar) {
+    console.warn(`Sidebar not detected`);
+    return;
+  }
 
-    const domElement = actualWindow.document.createElement('pre');
-    domElement.textContent = commandString;
+  const element = createElement('div', { class: 'BorederGrid-Row' }, [
+    createElement('div', { class: 'Border-Grid-cell' }, [
+      createElement('h2', {}, ['Clone fork']),
+      createElement(
+        'div',
+        { style: 'font-family: ui-monospace,SFMono-Regular,SF Mono,Menlo,Consolas,Liberation Mono,monospace' },
+        [commandString]
+      ),
+    ]),
+  ]);
 
-    const pos = actualWindow.document.querySelector('#topics-list-container');
-    if (!pos) return;
-    pos.parentNode.insertBefore(domElement, pos);
+  sidebar.prepend(element);
 
-})().catch(err => {
-    console.error(err, err.stack);
-});
-
+  console.log(commandString);
+})().catch(console.error);

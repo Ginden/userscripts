@@ -3,7 +3,7 @@
 // @author Michał Wadas
 // @version  $VERSION$
 // @grant    none
-// @include /https://github.com/.*/
+// @include https://github.com/*
 // @noframes
 // @namespace pl.michalwadas.userscripts.github
 // @license MIT

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     Ginden's Hacker News Improvements
 // @author Michał Wadas
-// @version  21.319.1017
+// @version  22.15.1803
 // @grant              GM.getValue
 // @grant              GM.setValue
 // @grant GM.registerMenuCommand
@@ -9,11 +9,11 @@
 // @downloadURL https://ginden.github.io/userscripts/hacker-news-improvements.user.js
 // @noframes
 // @namespace pl.michalwadas.userscripts.hackernews
-// @description Various QoL improvements for Hacker News. Generated from code 9c8c3f2f66048b6d76217ab54df4d6278645979fd83521108cb90029fba48987
+// @description Various QoL improvements for Hacker News. Generated from code 4752675cd3f267f3ad8f753bbb6b4ab5a16492793f2b0fd9c3e6662722874284
 // ==/UserScript==
 
 /**
-Copyright (c) 2017-2021 Michał Wadas
+Copyright (c) 2017-2022 Michał Wadas
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -1065,7 +1065,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       const currentDate = getDate();
       const karmaHistory = await getKarmaHistory();
       const previousDayVisitKarma = findLast(karmaHistory, ([date]) => date !== currentDate) || [currentDate, currentKarma];
-      console.log({ karmaHistory, previousDayVisitKarma, currentKarma });
       const [sinceDate, historicalKarma] = previousDayVisitKarma;
       const change = currentKarma - historicalKarma;
       const logoutElement = document.querySelector('a#logout');
